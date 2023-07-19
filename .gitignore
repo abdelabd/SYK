@@ -1,0 +1,24 @@
+Images/
+Simulated Hamiltonians/
+AdS2 Holography and the SYK Model.pdf
+computing_eigenvalues_for_unfolding OLD.nb
+computing_eigenvalues_for_unfolding.nb
+copy_mathematica_exactly.ipynb
+cuda_functions.ipynb
+generate_test_hamiltonian_mathematica copy.nb
+numba_cuda_hamiltonian nogood.ipynb
+numba_cuda_hamiltonian.ipynb
+numba_cuda_hamiltonian_3_2.ipynb
+numba_cuda_hamiltonian_3_debugging.ipynb
+numba_cuda_hamiltonian_3_debugging_2.ipynb
+numba_cuda_hamiltonian_3_debugging_3.ipynb
+numba_cuda_hamiltonian_3_v3 no_complex.ipynb
+numba_cuda_hamiltonian_3_v3 sparse.ipynb
+numba_cuda_tutorial.ipynb
+parameter_search.ipynb
+simulate_square_wave_driving_force.ipynb
+SYK and Consecutive-Level Spacings copy.ipynb
+SYK and Consecutive-Level Spacings.ipynb
+SYK and Consecutive-Level spacings.nb
+timing_hamiltonian_creation.txt
+
