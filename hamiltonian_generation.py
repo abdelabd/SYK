@@ -22,7 +22,7 @@ def make_H4_sparse(K, J, random_seed=0, precompute_pairs = True, precompute_quad
     # J = propto variance of gaussian distribution, sets an overall "energy level"
     Q = 4 # order of coupling
     N = 2*K # number of fermions
-    N_DIM = 2**K 
+    N_DIM = 2**K # Hilbert-space dimension
 
     ########################### Define fermionic modes #############################
     cr = sparse.csr_array(np.array([[0,1],[0,0]]))
@@ -69,12 +69,8 @@ def make_H4_sparse(K, J, random_seed=0, precompute_pairs = True, precompute_quad
                 for k in range(j+1, N-1):
                     for l in range(k+1, N):
                         index = i*(N**3)+j*(N**2)+k*N+l
-                        try:
-                            psi_quads[index] = psi_pairs[i*N+j]@psi_pairs[k*N+l]
-                        except:
-                            print(f"i={i}, j={j}, k={k}, l={l}")
-                            raise NotImplementedError("Something went wrong with precomputing psi_quads. Check the above indices.")
-    
+                        psi_quads[index] = psi_pairs[i*N+j]@psi_pairs[k*N+l]
+                        
     ########################### Define Hamiltonian #############################
     if precompute_pairs: 
         if precompute_quads:
