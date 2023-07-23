@@ -1,4 +1,3 @@
-
 import numpy as np 
 from scipy import sparse
 
@@ -72,6 +71,7 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
                                 index = i*(N**3)+j*(N**2)+k*N+l
                                 H += (1j**(Q/2))*js[i, j, k, l]*(psi_quads[index])
                 return H
+            return H4_func, psi, psi_pairs, psi_quads
         else:
             def H4_func(js):
                 H = sparse.csr_matrix(np.zeros((N_DIM, N_DIM), dtype=np.complex128))
@@ -83,6 +83,7 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
                             for l in range(k+1, N):
                                 H += (1j**(Q/2))*js[i, j, k, l]*(psi_ij@psi_pairs[k*N+l])
                 return H
+            return H4_func, psi, psi_pairs
     else:
         def H4_func(js):
                 H = sparse.csr_matrix(np.zeros((N_DIM, N_DIM), dtype=np.complex128))
@@ -96,8 +97,8 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
                             for l in range(k+1, N):
                                 H += (1j**(Q/2))*js[i, j, k, l]*(psi_ijk@psi[l])
                 return H
+        return H4_func, psi
 
-    return H4_func
         
 
 
