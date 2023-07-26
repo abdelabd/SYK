@@ -64,9 +64,9 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
         if precompute_quads:
             def H4_func(js):
                 H = sparse.csr_matrix(np.zeros((N_DIM, N_DIM), dtype=np.complex128))
-                for i in range(N):
-                    for j in range(i+1, N):
-                        for k in range(j+1, N):
+                for i in range(N-3):
+                    for j in range(i+1, N-2):
+                        for k in range(j+1, N-1):
                             for l in range(k+1, N):
                                 index = i*(N**3)+j*(N**2)+k*N+l
                                 H += (1j**(Q/2))*js[i, j, k, l]*(psi_quads[index])
@@ -75,11 +75,11 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
         else:
             def H4_func(js):
                 H = sparse.csr_matrix(np.zeros((N_DIM, N_DIM), dtype=np.complex128))
-                for i in range(N):
-                    for j in range(i+1, N):
+                for i in range(N-3):
+                    for j in range(i+1, N-2):
                         psi_ij = psi_pairs[i*N+j]
 
-                        for k in range(j+1, N):
+                        for k in range(j+1, N-1):
                             for l in range(k+1, N):
                                 H += (1j**(Q/2))*js[i, j, k, l]*(psi_ij@psi_pairs[k*N+l])
                 return H
@@ -87,11 +87,11 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
     else:
         def H4_func(js):
                 H = sparse.csr_matrix(np.zeros((N_DIM, N_DIM), dtype=np.complex128))
-                for i in range(N):
-                    for j in range(i+1, N):
+                for i in range(N-3):
+                    for j in range(i+1, N-2):
                         psi_ij = psi[i]@psi[j]
 
-                        for k in range(j+1, N):
+                        for k in range(j+1, N-1):
                             psi_ijk = psi_ij@psi[k]
 
                             for l in range(k+1, N):
