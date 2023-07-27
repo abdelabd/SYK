@@ -100,7 +100,7 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
         return H4_func, psi
 
         
-def make_H3_sparse(K, J, precompute_pairs = True, precompute_tris = True):
+def make_H3_sparse(K, precompute_pairs = True, precompute_tris = True):
 
     # K = Number of fermionic modes/creation-annihilation operators
     # J = propto variance of gaussian distribution, sets an overall "energy level"
