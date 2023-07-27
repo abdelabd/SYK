@@ -36,7 +36,7 @@ def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
     psi = [None for i in range(N)] 
     for i in range(1,K+1):
         psi[2*(i-1)] = sparse.csr_matrix((c(i)+cd(i))/np.sqrt(2))
-        psi[2*(i-1)+1] = sparse.csr_matrix((c(i)-cd(i))*(-1j/np.sqrt(2)))
+        psi[2*(i-1)+1] = sparse.csr_matrix((c(i)-cd(i))*(1j/np.sqrt(2)))
 
     ########################### Pre-compute pairwise inner products ############
     if precompute_pairs:
@@ -132,7 +132,7 @@ def make_H3_sparse(K, precompute_pairs = True, precompute_tris = True):
     psi = [None for i in range(N)] 
     for i in range(1,K+1):
         psi[2*(i-1)] = sparse.csr_matrix((c(i)+cd(i))/np.sqrt(2))
-        psi[2*(i-1)+1] = sparse.csr_matrix((c(i)-cd(i))*(-1j/np.sqrt(2)))
+        psi[2*(i-1)+1] = sparse.csr_matrix((c(i)-cd(i))*(1j/np.sqrt(2)))
 
     ########################### Pre-compute pairwise inner products ############
     if precompute_pairs:
