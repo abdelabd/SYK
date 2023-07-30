@@ -4,7 +4,7 @@ from scipy import sparse
 # Since it is much, much faster to define the Hamiltonian in terms of precomputed values, here we define a function that returns 
 # a general Hamiltonian function which is based on precomputed values. Thus, we don't need to (explicitly) hard-code the Hamiltonian for 
 # each set of parameters
-def make_H4_sparse(K, J, precompute_pairs = True, precompute_quads = True):
+def make_H4_sparse(K, precompute_pairs = True, precompute_quads = True):
 
     # K = Number of fermionic modes/creation-annihilation operators
     # J = propto variance of gaussian distribution, sets an overall "energy level"
