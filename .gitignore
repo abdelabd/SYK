@@ -1,6 +1,7 @@
 __pycache__/
 Excel/Benchmarks
 Images/
+joblib_cache/
 Simulated Hamiltonians/
 AdS2 Holography and the SYK Model.pdf
 copy_mathematica_exactly.ipynb
