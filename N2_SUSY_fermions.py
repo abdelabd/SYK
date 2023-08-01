@@ -18,11 +18,6 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
     id = sparse.csr_array(np.identity(2))
     id2 = sparse.csr_array(np.array([[-1,0],[0,1]]))
 
-    
-
-    
-
-
 
     ####################### Load or precompute fermions ############################################
     # Try loading the psi's and psi_dagger's if previously computed, otherwise compute and save them
@@ -36,20 +31,19 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
     try:
         psi_all = {}
         for i in range(1,N+1):
-            psi_i = np.load(os.path.join(N_DIR, f"psi_{i}.npy"))
-            psi_all[i] = sparse.csr_matrix(psi_i)
+            psi_i = sparse.load_npz(os.path.join(N_DIR, f"psi_{i}.npz"))
+            psi_all[i] = psi_i
     except FileNotFoundError:
         print("Computing psi's...")
         psi_all = Parallel(n_jobs=n_jobs)(delayed(psi)(n) for n in range(1,N+1))
         psi_all = {k+1:v for k,v in enumerate(psi_all)}
         for i, psi_i_sparse in psi_all.items():
-            psi_i = psi_i_sparse.toarray()
-            np.save(os.path.join(N_DIR, f"psi_{i}.npy"), psi_i)
+            sparse.save_npz(os.path.join(N_DIR, f"psi_{i}.npz"), psi_i_sparse)
 
     if easy_dagger:
         def psi_dagger(n):
-            psi_dagger_n = np.transpose(np.conjugate(psi_all[n].toarray()))
-            return sparse.csr_matrix(psi_dagger_n)
+            psi_dagger_n = psi_all[n].transpose().conjugate()
+            return psi_dagger_n
     else:
         def psi_dagger(n):
             factors = [id for i in range(n-1)]+[an]+[id2 for i in range(N-n)]
@@ -61,17 +55,15 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
     try:
         psi_dagger_all = {}
         for i in range(1,N+1):
-            psi_dagger_i = np.load(os.path.join(N_DIR, f"psi_dagger_{i}.npy"))
-            psi_dagger_all[i] = sparse.csr_matrix(psi_dagger_i)
+            psi_dagger_i = sparse.load_npz(os.path.join(N_DIR, f"psi_dagger_{i}.npz"))
+            psi_dagger_all[i] = psi_dagger_i
     except FileNotFoundError:
         print("Computing psi_dagger's...")
         psi_dagger_all = Parallel(n_jobs=n_jobs)(delayed(psi_dagger)(n) for n in range(1,N+1))
         psi_dagger_all = {k+1:v for k,v in enumerate(psi_dagger_all)}
         for i, psi_dagger_i_sparse in psi_dagger_all.items():
-            psi_dagger_i = psi_dagger_i_sparse.toarray()
-            np.save(os.path.join(N_DIR, f"psi_dagger_{i}.npy"), psi_dagger_i)
+            sparse.save_npz(os.path.join(N_DIR, f"psi_dagger_{i}.npz"), psi_dagger_i_sparse)
 
-            
 
     ####################### Load or precompute pairwise dot-products ################################
     def psi_psi(i, j):
@@ -93,8 +85,8 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
             psi_psi_all = {}
             for i in range(1, N+1):
                 for j in range(1, N+1):
-                    psi_psi_ij = np.load(os.path.join(N_DIR, f"psi_psi_{i}{j}.npy"))
-                    psi_psi_all[(i,j)] = sparse.csr_matrix(psi_psi_ij)
+                    psi_psi_ij = sparse.load_npz(os.path.join(N_DIR, f"psi_psi_{i}{j}.npz"))
+                    psi_psi_all[(i,j)] = psi_psi_ij
         except FileNotFoundError:
             print("Computing psi_psi's...")
             psi_psi_all = {}
@@ -102,16 +94,15 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi)(i,j) for j in range(1, N+1))
                 psi_psi_i = {(i, j+1):v for j,v in enumerate(psi_psi_i)}
                 for (i_label, j_label), psi_psi_ij_sparse in psi_psi_i.items():
-                    psi_psi_ij = psi_psi_ij_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npy"), psi_psi_ij)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npz"), psi_psi_ij_sparse)
                 psi_psi_all.update(psi_psi_i)
     else:
         try:
             psi_psi_all = {}
             for i in range(1, N):
                 for j in range(i+1, N+1):
-                    psi_psi_ij = np.load(os.path.join(N_DIR, f"psi_psi_{i}{j}.npy"))
-                    psi_psi_all[(i,j)] = sparse.csr_matrix(psi_psi_ij)
+                    psi_psi_ij = sparse.load_npz(os.path.join(N_DIR, f"psi_psi_{i}{j}.npz"))
+                    psi_psi_all[(i,j)] = psi_psi_ij
         except FileNotFoundError:
             print("Computing psi_psi's...")
             psi_psi_all = {}
@@ -119,8 +110,7 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi)(i,j) for j in range(i+1, N+1))
                 psi_psi_i = {(i, i+j+1):v for j,v in enumerate(psi_psi_i)}
                 for (i_label, j_label), psi_psi_ij_sparse in psi_psi_i.items():
-                    psi_psi_ij = psi_psi_ij_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npy"), psi_psi_ij)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npz"), psi_psi_ij_sparse)
                 psi_psi_all.update(psi_psi_i)
 
     # We only need daggers to check the fermion algebra
@@ -133,8 +123,8 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
             psi_psi_dagger_all = {}
             for i in range(1, N+1):
                 for j in range(1, N+1):
-                    psi_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_psi_dagger_{i}{j}.npy"))
-                    psi_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_psi_dagger_ij)
+                    psi_psi_dagger_ij = sparse.load_npz(os.path.join(N_DIR, f"psi_psi_dagger_{i}{j}.npz"))
+                    psi_psi_dagger_all[(i,j)] = psi_psi_dagger_ij
         except FileNotFoundError:
             print("Computing psi_psi_dagger's...")
             psi_psi_dagger_all = {}
@@ -142,8 +132,7 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi_dagger)(i,j) for j in range(1, N+1))
                 psi_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_psi_dagger_i)}
                 for (i_label, j_label), psi_psi_dagger_ij_sparse in psi_psi_dagger_i.items():
-                    psi_psi_dagger_ij = psi_psi_dagger_ij_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_psi_dagger_{i_label}{j_label}.npy"), psi_psi_dagger_ij)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_psi_dagger_{i_label}{j_label}.npz"), psi_psi_dagger_ij_sparse)
                 psi_psi_dagger_all.update(psi_psi_dagger_i)
 
         # psi_dagger_psi
@@ -151,8 +140,8 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
             psi_dagger_psi_all = {}
             for i in range(1, N+1):
                 for j in range(1, N+1):
-                    psi_dagger_psi_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_{i}{j}.npy"))
-                    psi_dagger_psi_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_ij)
+                    psi_dagger_psi_ij = sparse.load_npz(os.path.join(N_DIR, f"psi_dagger_psi_{i}{j}.npz"))
+                    psi_dagger_psi_all[(i,j)] = psi_dagger_psi_ij
         except FileNotFoundError:
             print("Computing psi_dagger_psi's...")
             psi_dagger_psi_all = {}
@@ -160,8 +149,7 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_dagger_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi)(i,j) for j in range(1, N+1))
                 psi_dagger_psi_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_i)}
                 for (i_label, j_label), psi_dagger_psi_ij_sparse in psi_dagger_psi_i.items():
-                    psi_dagger_psi_ij = psi_dagger_psi_ij_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_dagger_psi_{i_label}{j_label}.npy"), psi_dagger_psi_ij)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_dagger_psi_{i_label}{j_label}.npz"), psi_dagger_psi_ij_sparse)
                 psi_dagger_psi_all.update(psi_dagger_psi_i)
 
         # psi_dagger_psi_dagger
@@ -169,8 +157,8 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
             psi_dagger_psi_dagger_all = {}
             for i in range(1, N+1):
                 for j in range(1, N+1):
-                    psi_dagger_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i}{j}.npy"))
-                    psi_dagger_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_dagger_ij)
+                    psi_dagger_psi_dagger_ij = sparse.load_npz(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i}{j}.npz"))
+                    psi_dagger_psi_dagger_all[(i,j)] = psi_dagger_psi_dagger_ij
         except FileNotFoundError:
             print("Computing psi_dagger_psi_dagger's...")
             psi_dagger_psi_dagger_all = {}
@@ -178,8 +166,7 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_dagger_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi_dagger)(i,j) for j in range(1, N+1))
                 psi_dagger_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_dagger_i)}
                 for (i_label, j_label), psi_dagger_psi_dagger_ij_sparse in psi_dagger_psi_dagger_i.items():
-                    psi_dagger_psi_dagger_ij = psi_dagger_psi_dagger_ij_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i_label}{j_label}.npy"), psi_dagger_psi_dagger_ij)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i_label}{j_label}.npz"), psi_dagger_psi_dagger_ij_sparse)
                 psi_dagger_psi_dagger_all.update(psi_dagger_psi_dagger_i)
 
 
@@ -242,8 +229,8 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
         for i in range(1, N-1):
             for j in range(i+1, N):
                 for k in range(j+1, N+1):
-                    psi_psi_psi_ijk = np.load(os.path.join(N_DIR, f"psi_psi_psi_{i}{j}{k}.npy"))
-                    psi_psi_psi_all[(i,j,k)] = sparse.csr_matrix(psi_psi_psi_ijk)
+                    psi_psi_psi_ijk = sparse.load_npz(os.path.join(N_DIR, f"psi_psi_psi_{i}{j}{k}.npz"))
+                    psi_psi_psi_all[(i,j,k)] = psi_psi_psi_ijk
     except FileNotFoundError:
         print("Computing psi_psi_psi's...")
         psi_psi_psi_all = {}
@@ -253,8 +240,7 @@ def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_
                 psi_psi_psi_ij = Parallel(n_jobs=n_jobs)(delayed(psi_psi_psi)(psi_psi_ij, k) for k in range(j+1, N+1))
                 psi_psi_psi_ij = {(i, j, j+k+1):v for k,v in enumerate(psi_psi_psi_ij)}
                 for (i_label, j_label, k_label), psi_psi_psi_ijk_sparse in psi_psi_psi_ij.items():
-                    psi_psi_psi_ijk = psi_psi_psi_ijk_sparse.toarray()
-                    np.save(os.path.join(N_DIR, f"psi_psi_psi_{i_label}{j_label}{k_label}.npy"), psi_psi_psi_ijk)
+                    sparse.save_npz(os.path.join(N_DIR, f"psi_psi_psi_{i_label}{j_label}{k_label}.npz"), psi_psi_psi_ijk_sparse)
                 psi_psi_psi_all.update(psi_psi_psi_ij)
 
     out = {"psi_all": psi_all,
