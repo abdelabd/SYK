@@ -84,76 +84,99 @@ def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("
 
 
     # psi_psi
-    try:
-        psi_psi_all = {}
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                psi_psi_ij = np.load(os.path.join(N_DIR, f"psi_psi_{i}{j}.npy"))
-                psi_psi_all[(i,j)] = sparse.csr_matrix(psi_psi_ij)
-    except FileNotFoundError:
-        print("Computing psi_psi's...")
-        psi_psi_all = {}
-        for i in range(1, N+1):
-            psi_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi)(i,j) for j in range(1, N+1))
-            psi_psi_i = {(i, j+1):v for j,v in enumerate(psi_psi_i)}
-            for (i_label, j_label), psi_psi_ij_sparse in psi_psi_i.items():
-                psi_psi_ij = psi_psi_ij_sparse.toarray()
-                np.save(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npy"), psi_psi_ij)
-            psi_psi_all.update(psi_psi_i)
+    if check_algebra:
+        try:
+            psi_psi_all = {}
+            for i in range(1, N+1):
+                for j in range(1, N+1):
+                    psi_psi_ij = np.load(os.path.join(N_DIR, f"psi_psi_{i}{j}.npy"))
+                    psi_psi_all[(i,j)] = sparse.csr_matrix(psi_psi_ij)
+        except FileNotFoundError:
+            print("Computing psi_psi's...")
+            psi_psi_all = {}
+            for i in range(1, N+1):
+                psi_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi)(i,j) for j in range(1, N+1))
+                psi_psi_i = {(i, j+1):v for j,v in enumerate(psi_psi_i)}
+                for (i_label, j_label), psi_psi_ij_sparse in psi_psi_i.items():
+                    psi_psi_ij = psi_psi_ij_sparse.toarray()
+                    np.save(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npy"), psi_psi_ij)
+                psi_psi_all.update(psi_psi_i)
+    else:
+        try:
+            psi_psi_all = {}
+            for i in range(1, N):
+                for j in range(i+1, N+1):
+                    psi_psi_ij = np.load(os.path.join(N_DIR, f"psi_psi_{i}{j}.npy"))
+                    psi_psi_all[(i,j)] = sparse.csr_matrix(psi_psi_ij)
+        except FileNotFoundError:
+            print("Computing psi_psi's...")
+            psi_psi_all = {}
+            for i in range(1, N):
+                psi_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi)(i,j) for j in range(i+1, N+1))
+                psi_psi_i = {(i, i+j+1):v for j,v in enumerate(psi_psi_i)}
+                for (i_label, j_label), psi_psi_ij_sparse in psi_psi_i.items():
+                    psi_psi_ij = psi_psi_ij_sparse.toarray()
+                    np.save(os.path.join(N_DIR, f"psi_psi_{i_label}{j_label}.npy"), psi_psi_ij)
+                psi_psi_all.update(psi_psi_i)
 
+    # We only need daggers to check the fermion algebra
     # psi_psi_dagger
-    try:
-        psi_psi_dagger_all = {}
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                psi_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_psi_dagger_{i}{j}.npy"))
-                psi_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_psi_dagger_ij)
-    except FileNotFoundError:
-        print("Computing psi_psi_dagger's...")
-        psi_psi_dagger_all = {}
-        for i in range(1, N+1):
-            psi_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi_dagger)(i,j) for j in range(1, N+1))
-            psi_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_psi_dagger_i)}
-            for (i_label, j_label), psi_psi_dagger_ij_sparse in psi_psi_dagger_i.items():
-                psi_psi_dagger_ij = psi_psi_dagger_ij_sparse.toarray()
-                np.save(os.path.join(N_DIR, f"psi_psi_dagger_{i_label}{j_label}.npy"), psi_psi_dagger_ij)
-            psi_psi_dagger_all.update(psi_psi_dagger_i)
+    psi_psi_dagger_all = None
+    psi_dagger_psi_all = None
+    psi_dagger_psi_dagger_all = None
+    if check_algebra:
+        try:
+            psi_psi_dagger_all = {}
+            for i in range(1, N+1):
+                for j in range(1, N+1):
+                    psi_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_psi_dagger_{i}{j}.npy"))
+                    psi_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_psi_dagger_ij)
+        except FileNotFoundError:
+            print("Computing psi_psi_dagger's...")
+            psi_psi_dagger_all = {}
+            for i in range(1, N+1):
+                psi_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_psi_dagger)(i,j) for j in range(1, N+1))
+                psi_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_psi_dagger_i)}
+                for (i_label, j_label), psi_psi_dagger_ij_sparse in psi_psi_dagger_i.items():
+                    psi_psi_dagger_ij = psi_psi_dagger_ij_sparse.toarray()
+                    np.save(os.path.join(N_DIR, f"psi_psi_dagger_{i_label}{j_label}.npy"), psi_psi_dagger_ij)
+                psi_psi_dagger_all.update(psi_psi_dagger_i)
 
-    # psi_dagger_psi
-    try:
-        psi_dagger_psi_all = {}
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                psi_dagger_psi_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_{i}{j}.npy"))
-                psi_dagger_psi_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_ij)
-    except FileNotFoundError:
-        print("Computing psi_dagger_psi's...")
-        psi_dagger_psi_all = {}
-        for i in range(1, N+1):
-            psi_dagger_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi)(i,j) for j in range(1, N+1))
-            psi_dagger_psi_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_i)}
-            for (i_label, j_label), psi_dagger_psi_ij_sparse in psi_dagger_psi_i.items():
-                psi_dagger_psi_ij = psi_dagger_psi_ij_sparse.toarray()
-                np.save(os.path.join(N_DIR, f"psi_dagger_psi_{i_label}{j_label}.npy"), psi_dagger_psi_ij)
-            psi_dagger_psi_all.update(psi_dagger_psi_i)
+        # psi_dagger_psi
+        try:
+            psi_dagger_psi_all = {}
+            for i in range(1, N+1):
+                for j in range(1, N+1):
+                    psi_dagger_psi_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_{i}{j}.npy"))
+                    psi_dagger_psi_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_ij)
+        except FileNotFoundError:
+            print("Computing psi_dagger_psi's...")
+            psi_dagger_psi_all = {}
+            for i in range(1, N+1):
+                psi_dagger_psi_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi)(i,j) for j in range(1, N+1))
+                psi_dagger_psi_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_i)}
+                for (i_label, j_label), psi_dagger_psi_ij_sparse in psi_dagger_psi_i.items():
+                    psi_dagger_psi_ij = psi_dagger_psi_ij_sparse.toarray()
+                    np.save(os.path.join(N_DIR, f"psi_dagger_psi_{i_label}{j_label}.npy"), psi_dagger_psi_ij)
+                psi_dagger_psi_all.update(psi_dagger_psi_i)
 
-    # psi_dagger_psi_dagger
-    try:
-        psi_dagger_psi_dagger_all = {}
-        for i in range(1, N+1):
-            for j in range(1, N+1):
-                psi_dagger_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i}{j}.npy"))
-                psi_dagger_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_dagger_ij)
-    except FileNotFoundError:
-        print("Computing psi_dagger_psi_dagger's...")
-        psi_dagger_psi_dagger_all = {}
-        for i in range(1, N+1):
-            psi_dagger_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi_dagger)(i,j) for j in range(1, N+1))
-            psi_dagger_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_dagger_i)}
-            for (i_label, j_label), psi_dagger_psi_dagger_ij_sparse in psi_dagger_psi_dagger_i.items():
-                psi_dagger_psi_dagger_ij = psi_dagger_psi_dagger_ij_sparse.toarray()
-                np.save(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i_label}{j_label}.npy"), psi_dagger_psi_dagger_ij)
-            psi_dagger_psi_dagger_all.update(psi_dagger_psi_dagger_i)
+        # psi_dagger_psi_dagger
+        try:
+            psi_dagger_psi_dagger_all = {}
+            for i in range(1, N+1):
+                for j in range(1, N+1):
+                    psi_dagger_psi_dagger_ij = np.load(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i}{j}.npy"))
+                    psi_dagger_psi_dagger_all[(i,j)] = sparse.csr_matrix(psi_dagger_psi_dagger_ij)
+        except FileNotFoundError:
+            print("Computing psi_dagger_psi_dagger's...")
+            psi_dagger_psi_dagger_all = {}
+            for i in range(1, N+1):
+                psi_dagger_psi_dagger_i = Parallel(n_jobs=n_jobs)(delayed(psi_dagger_psi_dagger)(i,j) for j in range(1, N+1))
+                psi_dagger_psi_dagger_i = {(i, j+1):v for j,v in enumerate(psi_dagger_psi_dagger_i)}
+                for (i_label, j_label), psi_dagger_psi_dagger_ij_sparse in psi_dagger_psi_dagger_i.items():
+                    psi_dagger_psi_dagger_ij = psi_dagger_psi_dagger_ij_sparse.toarray()
+                    np.save(os.path.join(N_DIR, f"psi_dagger_psi_dagger_{i_label}{j_label}.npy"), psi_dagger_psi_dagger_ij)
+                psi_dagger_psi_dagger_all.update(psi_dagger_psi_dagger_i)
 
 
 
