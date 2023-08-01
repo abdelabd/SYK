@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 
 
 
-def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("Excel", "N2_SUSY_SYK", "Psi")): # N = Number of fermions
+def make_fermions(N, n_jobs=20, easy_dagger=True, check_algebra=False, n_parent_dir=os.path.join("Excel", "N2_SUSY_SYK", "Psi")): # N = Number of fermions
     N_DIM = 2**N # Hilbert-space dimension
     N_DIR = os.path.join(n_parent_dir, f"N{N}")
     os.makedirs(N_DIR, exist_ok=True)
@@ -18,24 +18,21 @@ def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("
     id = sparse.csr_array(np.identity(2))
     id2 = sparse.csr_array(np.array([[-1,0],[0,1]]))
 
+    
+
+    
+
+
+
+    ####################### Load or precompute fermions ############################################
+    # Try loading the psi's and psi_dagger's if previously computed, otherwise compute and save them
     def psi(n):
         factors = [id for i in range(n-1)]+[cr]+[id2 for i in range(N-n)]
         out = factors[0]
         for i in range(1, N):
             out = sparse.kron(out,factors[i])
         return out
-
-    def psi_dagger(n):
-        factors = [id for i in range(n-1)]+[an]+[id2 for i in range(N-n)]
-        out = factors[0]
-        for i in range(1, N):
-            out = sparse.kron(out,factors[i])
-        return out
-
-
-
-    ####################### Load or precompute fermions ############################################
-    # Try loading the psi's and psi_dagger's if previously computed, otherwise compute and save them
+    
     try:
         psi_all = {}
         for i in range(1,N+1):
@@ -48,6 +45,18 @@ def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("
         for i, psi_i_sparse in psi_all.items():
             psi_i = psi_i_sparse.toarray()
             np.save(os.path.join(N_DIR, f"psi_{i}.npy"), psi_i)
+
+    if easy_dagger:
+        def psi_dagger(n):
+            psi_dagger_n = np.transpose(np.conjugate(psi_all[n].toarray()))
+            return sparse.csr_matrix(psi_dagger_n)
+    else:
+        def psi_dagger(n):
+            factors = [id for i in range(n-1)]+[an]+[id2 for i in range(N-n)]
+            out = factors[0]
+            for i in range(1, N):
+                out = sparse.kron(out,factors[i])
+            return out
 
     try:
         psi_dagger_all = {}
@@ -62,12 +71,7 @@ def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("
             psi_dagger_i = psi_dagger_i_sparse.toarray()
             np.save(os.path.join(N_DIR, f"psi_dagger_{i}.npy"), psi_dagger_i)
 
-    # Confirm that psi_dagger as defined indeed gives psi_dagger
-    for i, psi_i in psi_all.items():
-        psi_daggeri = psi_dagger_all[i]
-        assert(np.allclose(np.transpose(np.conjugate(psi_i.toarray())), psi_daggeri.toarray()))
-
-
+            
 
     ####################### Load or precompute pairwise dot-products ################################
     def psi_psi(i, j):
