@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 
 
 
-def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("Excel", "N2_SUSY_SYK", "PSI")): # N = Number of fermions
+def make_fermions(N, n_jobs=20, check_algebra=False, n_parent_dir=os.path.join("Excel", "N2_SUSY_SYK", "Psi")): # N = Number of fermions
     N_DIM = 2**N # Hilbert-space dimension
     N_DIR = os.path.join(n_parent_dir, f"N{N}")
     os.makedirs(N_DIR, exist_ok=True)
