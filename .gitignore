@@ -16,5 +16,7 @@ numba_cuda_hamiltonian_3_debugging_3.ipynb
 numba_cuda_hamiltonian_3_v3 no_complex.ipynb
 numba_cuda_hamiltonian_3_v3 sparse.ipynb
 numba_cuda_tutorial.ipynb
+sparse_matrix_multiply.ipynb
+supersymmetric_syk_N2_no_work.ipynb
 timing_hamiltonian_creation.txt
 
