@@ -1,9 +1,9 @@
 __pycache__/
+backburner/
 Excel/Benchmarks
 Excel/N2_SUSY_SYK
 Excel/eigenvalues
 Images/
-joblib_cache/
 Simulated Hamiltonians/
 AdS2 Holography and the SYK Model.pdf
 copy_mathematica_exactly.ipynb
