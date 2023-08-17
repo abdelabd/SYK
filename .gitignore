@@ -8,6 +8,7 @@ Simulated Hamiltonians/
 AdS2 Holography and the SYK Model.pdf
 copy_mathematica_exactly.ipynb
 cuda_functions.ipynb
+N2_SUSY_SYK_MLP good_result.ipynb
 numba_cuda_hamiltonian nogood.ipynb
 numba_cuda_hamiltonian.ipynb
 numba_cuda_hamiltonian_3_2.ipynb
